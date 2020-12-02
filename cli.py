@@ -1,8 +1,16 @@
 from pprint import pprint
 from explore import get_all_files
 import re
+import struct
 
 colors = {}
+
+
+RESET = '\033[0m'
+
+
+def get_color_escape(r, g, b, background=False):
+    return '\033[{};2;{};{};{}m'.format(48 if background else 38, r, g, b)
 
 
 def save_colors(found_colors):
@@ -11,6 +19,10 @@ def save_colors(found_colors):
             colors[color] += 1
         else:
             colors[color] = 1
+
+
+def get_rgb_from_hex(hex_color_string):
+    return struct.unpack('BBB', bytes.fromhex(hex_color_string[1:]))
 
 
 if __name__ == '__main__':
@@ -38,6 +50,9 @@ if __name__ == '__main__':
     del colors
 
     top_colors = [key for key in sorted_colors.keys()
-                  if sorted_colors[key] > 1][:10]
+                  if sorted_colors[key] > 1 and len(key) == 7][:10]
 
-    pprint(top_colors)
+    for top_color in top_colors:
+        r, g, b = get_rgb_from_hex(top_color)
+        print(get_color_escape(r, g, b, background=True) + '  ' +
+              RESET, top_color, sorted_colors[top_color])
